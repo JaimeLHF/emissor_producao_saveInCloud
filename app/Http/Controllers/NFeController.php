@@ -61,7 +61,6 @@ class NFeController extends Controller
             $venda = Vendas::with('xml')->find($request->venda_id);
             $emitente = Emitente::first();
 
-
             if ($emitente == null) {
                 return response()->json('Configure o emitente', 404);
             }
@@ -133,6 +132,7 @@ class NFeController extends Controller
 
             $venda = Vendas::with('xml')->find($request->venda_id);
             $emitente = Emitente::first();
+            $xml_venda = XML::where('venda_id', $venda->id)->first();
 
             if ($emitente == null) {
                 return response()->json('Configure o emitente', 404);
@@ -156,7 +156,7 @@ class NFeController extends Controller
                 "CSCid" => "000001"
             ], $emitente);
 
-            $nfe = $nfe_service->cancelar($venda, $request->justificativa);
+            $nfe = $nfe_service->cancelar($venda, $request->justificativa, $xml_venda->xml);
 
             if ($venda->status == 'Novo') {
                 return response()->json('Status venda: ' . $venda->status, 404);
@@ -167,6 +167,10 @@ class NFeController extends Controller
                 $venda->status = 'Cancelado';
                 $venda->valorTotal = 0;
                 $venda->save();
+
+                $xml_venda->status = 'Cancelado';
+                $xml_venda->xml = $nfe['sucesso'];
+                $xml_venda->save();
 
                 return response()->json($nfe, 200);
             } else {
@@ -205,6 +209,40 @@ class NFeController extends Controller
         return response()->json($result, 200);
     }
 
+    public function vincular(Request $request)
+    {
+        $venda = Vendas::with('cliente', 'itens.produto', 'fatura')->find($request->venda_id);
+        $emitente = Emitente::first();
+        $xml_venda = XML::where('venda_id', $venda->id)->first();
+ 
+        $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
+        $cnpj = str_replace("/", "", $cnpj);
+        $cnpj = str_replace("-", "", $cnpj);
+        $cnpj = str_replace(" ", "", $cnpj);
+
+        $nfe_service = new NFeService([
+            "atualizacao" => date('Y-m-d h:i:s'),
+            "tpAmb" => (int)$emitente->ambiente,
+            "razaosocial" => $emitente->razao_social,
+            "siglaUF" => $emitente->uf,
+            "cnpj" => $cnpj,
+            "schemes" => "PL_009_V4",
+            "versao" => "4.00",
+            "tokenIBPT" => "AAAAAAA",
+            "CSC" => "AAAAAAA",
+            "CSCid" => "000001"
+        ], $emitente);
+        
+        $result = $nfe_service->consultaNFe($venda);
+
+        $nfe = $nfe_service->vincularCancelamento($venda, $xml_venda->xml);
+
+        $xml_venda->xml = $nfe['sucesso'];
+        $xml_venda->save();
+
+        return response()->json($result, 200);
+    }
+
     public function download($id)
     {
         try {
@@ -228,12 +266,11 @@ class NFeController extends Controller
     public function imprimir($id)
     {
         date_default_timezone_set('America/Sao_Paulo');
-        $venda = Vendas::with('xml')->find($id);  
+        $venda = Vendas::with('xml')->find($id);
         $xmlContent  = $venda->xml->first()->xml;
 
         $xml = $xmlContent;
-        $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/images.jpg')));
-        $logo = realpath('../public/images.jpg');
+        $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/drd_logo.jpg')));
 
         try {
 
@@ -280,12 +317,11 @@ class NFeController extends Controller
     {
         date_default_timezone_set('America/Sao_Paulo');
         $venda = Vendas::with('xml')->where('numero_nfe', $numero_nfe)->first();
-  
+
         $xmlContent  = $venda->xml->first()->xml;
 
         $xml = $xmlContent;
-        $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/images.jpg')));
-        $logo = realpath('../public/images.jpg');
+        $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/drd_logo.jpg')));
 
         try {
 
@@ -304,7 +340,7 @@ class NFeController extends Controller
                 $margSup = 2,
                 $margEsq = 2
             );
-            // $danfe->logoParameters($logo, $logoAlign = 'C', $mode_bw = false);
+            $danfe->logoParameters($logo, $logoAlign = 'C', $mode_bw = false);
             $danfe->setDefaultFont($font = 'times');
             $danfe->setDefaultDecimalPlaces(4);
             $danfe->debugMode(false);
@@ -318,7 +354,7 @@ class NFeController extends Controller
             //Informe o numero DPEC
             /*  $danfe->depecNumber('123456789'); */
             //Configura a posicao da logo
-            $danfe->logoParameters($logo, 'C', false);
+            // $danfe->logoParameters($logo, 'C', false);
             //Gera o PDF
             $pdf = $danfe->render($logo);
             header('Content-Type: application/pdf');

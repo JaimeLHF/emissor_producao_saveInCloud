@@ -7,6 +7,7 @@ use NFePHP\NFe\Tools;
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Common\Standardize;
 use App\Models\Vendas;
+use App\Models\XML;
 use NFePHP\NFe\Complements;
 
 
@@ -66,7 +67,7 @@ class NFeService
         $stdIde->natOp = $venda->natOp; //
         $stdIde->mod = 55; //
         $stdIde->serie = $emitente->numero_serie_nfe; //
-        $stdIde->nNF = 710; //
+        $stdIde->nNF = $numeroNFe + 1; //
         $stdIde->dhEmi = date("Y-m-d\TH:i:sP"); //
         $stdIde->dhSaiEnt = date("Y-m-d\TH:i:sP"); //
         $stdIde->tpNF = 1; //
@@ -538,8 +539,8 @@ class NFeService
             $protocolo = $this->tools->sefazConsultaRecibo($recibo);
             sleep(3);
             try {
-                $xml = Complements::toAuthorize($signXml, $protocolo);          
-                return [                   
+                $xml = Complements::toAuthorize($signXml, $protocolo);
+                return [
                     'sucesso' => $xml
                 ];
                 // $this->printDanfe($xml);
@@ -555,11 +556,12 @@ class NFeService
         }
     }
 
-    public function cancelar($venda, $justificativa)
+    public function cancelar($venda, $justificativa, $xml_venda)
     {
         try {
 
             $chave = $venda->chave;
+
             $response = $this->tools->sefazConsultaChave($chave);
             sleep(2);
             $stdCl = new Standardize($response);
@@ -569,19 +571,19 @@ class NFeService
 
             $response = $this->tools->sefazCancela($chave, $xJust, $nProt);
             sleep(2);
+
             $stdCl = new Standardize($response);
             $std = $stdCl->toStd();
             $arr = $stdCl->toArray();
-            $json = $stdCl->toJson();
 
             if ($std->cStat != 128) {
             } else {
                 $cStat = $std->retEvento->infEvento->cStat;
                 if ($cStat == '101' || $cStat == '135' || $cStat == '155') {
-                    $xml = Complements::toAuthorize($this->tools->lastRequest, $response);
-                    file_put_contents(public_path('xml_nfe_cancelada/') . $chave . '.xml', $xml);
-
-                    return $response;
+                    $xml = Complements::cancelRegister($xml_venda, $response);                    
+                    return [
+                        'sucesso' => $xml
+                    ];                  
                     
                 } else {
                     return ['erro' => true, 'data' => $arr];
@@ -589,6 +591,29 @@ class NFeService
             }
         } catch (\Exception $e) {
             return ['erro' => true, 'data' => $e->getMessage()];
+        }
+    }
+
+    public function vincularCancelamento($venda, $xml_venda)
+    {
+        $chave = $venda->chave;
+        $response = $this->tools->sefazConsultaChave($chave);
+
+        $stdCl = new Standardize($response);
+        // $arr = $stdCl->toArray();
+
+        $nfe = $xml_venda;
+        $cancelamento = $response;
+
+        try {
+            $xml = Complements::cancelRegister($nfe, $cancelamento);
+            
+            return [
+                'sucesso' => $xml
+            ];
+         
+        } catch (\Exception $e) {
+            echo "Erro: " . $e->getMessage();
         }
     }
 
