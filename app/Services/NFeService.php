@@ -7,7 +7,6 @@ use NFePHP\NFe\Tools;
 use NFePHP\Common\Certificate;
 use NFePHP\NFe\Common\Standardize;
 use App\Models\Vendas;
-use App\Models\XML;
 use NFePHP\NFe\Complements;
 
 
@@ -21,7 +20,7 @@ class NFeService
 
     public function __construct($config, $emitente)
     {
-        $certificadoDigital = file_get_contents('../public/DRD INDUSTRIA E COMERCIO DE MOVEIS LTDA24287808000160.pfx');
+        $certificadoDigital = file_get_contents('../public/certificado.pfx');
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
         $this->tools->model(55);
     }
@@ -74,7 +73,7 @@ class NFeService
         $stdIde->idDest = $emitente->uf != $venda->cliente->uf ? 2 : 1; //
         $stdIde->cMunFG = $emitente->codigo_municipio; //
         $stdIde->tpImp = 1; //
-        $stdIde->tpEmis = 1; //
+        $stdIde->tpEmis = 6; //
         $stdIde->tpAmb = $emitente->ambiente; //
         $stdIde->finNFe = $venda->finNFe; //
         $stdIde->indFinal = 1; //
@@ -422,7 +421,7 @@ class NFeService
 
         //FATURA
         $stdFat = new \stdClass();
-        $stdFat->nFat = (int)$numeroNFe; //mesmo numero da nfe
+        $stdFat->nFat = (int)$numeroNFe + 1; //mesmo numero da nfe
         $stdFat->vOrig = $stdICMSTot->vNF;
         $stdFat->vDesc = 0.00; //verificar, colocar no cadastro da venda
         $stdFat->vLiq = ($stdICMSTot->vNF - $stdFat->vDesc);
@@ -528,7 +527,7 @@ class NFeService
 
             $st = new Standardize();
             $std = $st->toStd($resp);
-            sleep(3);
+            sleep(5);
             if ($std->cStat != 103) {
 
                 return [
@@ -537,7 +536,7 @@ class NFeService
             }
             $recibo = $std->infRec->nRec;
             $protocolo = $this->tools->sefazConsultaRecibo($recibo);
-            sleep(3);
+            sleep(5);
             try {
                 $xml = Complements::toAuthorize($signXml, $protocolo);
                 return [

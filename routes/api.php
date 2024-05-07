@@ -16,6 +16,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/gerarArray', [ProdutoController::class, 'gerarArray']);
+
 //Acabamentos
 Route::group(['prefix' => 'acabamentos'], function () {
     Route::get('/', [AcabamentoController::class, 'getAllAcabamentos']);
@@ -32,6 +34,7 @@ Route::group(['prefix' => 'produtos'], function () {
     Route::post('/new', [ProdutoController::class, 'newProduto']);
     Route::put('/update/{id}', [ProdutoController::class, 'updateBydId']);
     Route::delete('/delete/{id}', [ProdutoController::class, 'deleteBydId']);
+    
 });
 
 //Clientes

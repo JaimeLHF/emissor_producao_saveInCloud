@@ -18,8 +18,7 @@ class Fatura extends Model
         return [
             'venda_id' => 'required|exists:venda,id',
             'forma_pagamento' => 'required|string',
-            'vencimento' => 'required|date',
-            'valor' => 'required|numeric',
+            'vencimento' => 'required|date',       
             'status' => 'required|string',
             'valor_ipi' => 'required|numeric',
         ];

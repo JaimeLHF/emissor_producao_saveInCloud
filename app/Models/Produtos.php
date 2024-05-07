@@ -20,7 +20,7 @@ class Produtos extends Model
 	public static function rules()
     {
         return [
-			'nome' => 'required|string|max:50',
+			'nome' => 'required|string',
 			'acabamento_id' => 'required|exists:acabamentos,id',
 			'valor' => 'required|numeric',
 			'cfop_interno' => 'required|string',
@@ -35,7 +35,7 @@ class Produtos extends Model
 			'perc_pis' => 'required|numeric',
 			'perc_cofins' => 'required|numeric',
 			'perc_ipi' => 'required|numeric',
-			'orig' => 'required|numeric',
+			'orig' => 'required|string',
         ];
     }
 

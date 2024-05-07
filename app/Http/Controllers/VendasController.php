@@ -63,7 +63,7 @@ class VendasController extends Controller
                 ]);
             }
 
-            return response()->json($venda, 200);
+            return response()->json(['message' => 'Venda criada com sucesso', 'venda_ID' => $result->id], 201);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 404);
         }
