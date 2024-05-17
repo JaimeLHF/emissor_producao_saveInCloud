@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('venda_id');
             $table->foreign('venda_id')->references('id')->on('vendas')->onDelete('cascade');
             $table->string('status');
-            $table->float('valor_ipi');
-            $table->decimal('valor', 10, 2);        
+            $table->double('valor', 10, 2);
+            $table->double('valor', 10, 2);        
             $table->string('forma_pagamento');
             $table->date('vencimento');
             $table->timestamps();

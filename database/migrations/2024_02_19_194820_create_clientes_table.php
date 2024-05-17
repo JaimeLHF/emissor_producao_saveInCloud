@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->string('razao_social')->nullable();
             $table->char('cpf_cnpj');
-            $table->char('ie_rg');
+            $table->char('ie_rg')->nullable();
+            $table->char('im')->nullable();
             $table->boolean('contribuinte');
             $table->string('cep');
             $table->string('rua');
@@ -23,13 +25,13 @@ return new class extends Migration
             $table->string('bairro');
             $table->string('municipio');
             $table->string('uf');
-            $table->string('complemento');
-            $table->string('logradouro');
+            $table->string('complemento')->nullable();
+            $table->string('logradouro')->nullable();
             $table->string('codigo_municipio');
             $table->string('codigo_pais');
             $table->string('pais');
-            $table->string('telefone');
-            $table->string('email');
+            $table->string('telefone')->nullable();
+            $table->string('email')->nullable();
             $table->timestamps();
         });
     }

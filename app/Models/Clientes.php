@@ -10,7 +10,7 @@ class Clientes extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nome', 'cpf_cnpj', 'contribuinte', 'cep', 'rua', 'numero', 'codigo_municipio', 
+        'nome', 'ie_rg', 'cpf_cnpj', 'contribuinte', 'cep', 'rua', 'numero', 'codigo_municipio', 
         'codigo_pais', 'pais', 'bairro', 'logradouro', 'municipio', 'uf', 'complemento', 'telefone', 'email'
     ];
 
@@ -32,7 +32,7 @@ class Clientes extends Model
             'uf' => 'required|string',
             'complemento' => 'string',
             'telefone' => 'required|string',
-            'email' => 'required|string',
+            'email' => 'string',
         ];
     }
 }

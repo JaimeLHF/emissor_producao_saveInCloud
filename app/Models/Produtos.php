@@ -11,7 +11,7 @@ class Produtos extends Model
     use HasFactory;
 
 	protected $fillable = [
-		'nome', 'acabamento_id', 'valor', 'cfop_interno', 'cfop_externo', 'ncm', 'codigo_barras', 
+		'nome', 'acabamento_id', 'tipo', 'valor', 'cfop_interno', 'cfop_externo', 'ncm', 'codigo_barras', 
 		'und_venda', 'cst_csosn', 'cst_pis', 'cst_cofins', 'cst_ipi', 'perc_icms', 'perc_pis',
 		'perc_cofins', 'perc_ipi', 'orig'
 	];
@@ -23,6 +23,7 @@ class Produtos extends Model
 			'nome' => 'required|string',
 			'acabamento_id' => 'required|exists:acabamentos,id',
 			'valor' => 'required|numeric',
+			'tipo' => 'required|string',
 			'cfop_interno' => 'required|string',
 			'cfop_externo' => 'required|string',
 			'ncm' => 'required|string',

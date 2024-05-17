@@ -8,7 +8,8 @@ use NFePHP\Common\Certificate;
 use NFePHP\NFe\Common\Standardize;
 use App\Models\Vendas;
 use NFePHP\NFe\Complements;
-
+use NFePHP\Common\Soap\SoapCurl;
+use NFePHP\Common\Soap\SoapFake;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
@@ -20,10 +21,12 @@ class NFeService
 
     public function __construct($config, $emitente)
     {
-        $certificadoDigital = file_get_contents('../public/certificado.pfx');
+        $certificadoDigital = file_get_contents('../public/7f28240503584d84 DRD DAVI.pfx');
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
         $this->tools->model(55);
     }
+
+
 
     public function consultaNFe($venda)
     {
@@ -73,7 +76,7 @@ class NFeService
         $stdIde->idDest = $emitente->uf != $venda->cliente->uf ? 2 : 1; //
         $stdIde->cMunFG = $emitente->codigo_municipio; //
         $stdIde->tpImp = 1; //
-        $stdIde->tpEmis = 6; //
+        $stdIde->tpEmis = 1; //
         $stdIde->tpAmb = $emitente->ambiente; //
         $stdIde->finNFe = $venda->finNFe; //
         $stdIde->indFinal = 1; //
@@ -93,7 +96,6 @@ class NFeService
         $ie = str_replace("/", "", $ie);
         $ie = str_replace("-", "", $ie);
         $stdEmit->IE = $ie;
-        $stdEmit->IM = 3153;
 
         $stdEmit->CRT = $emitente->situacao_tributaria; // Ajsutar situação tributaria conforme cliente
 
@@ -139,6 +141,7 @@ class NFeService
         $stdDest = new \stdClass();
         $stdDest->xNome = $this->retiraAcentos($venda->cliente->nome);
         $stdDest->email = $venda->cliente->email;
+        $stdDest->IM = $venda->cliente->im;
         if ($venda->cliente->contribuinte) {
             if ($venda->cliente->ie_rg == 'ISENTO') {
                 $stdDest->indIEDest = "2"; //Contribuinte isento de Inscrição no cadastro de Contribuintes do ICMS
@@ -212,7 +215,10 @@ class NFeService
             $stdProd->cEAN = $cod ? $i->produto->codigo_barras : 'SEM GTIN';
             $stdProd->cEANTrib = $cod ? $i->produto->codigo_barras : 'SEM GTIN';
             $stdProd->cProd = $i->produto->id;
-            $stdProd->xProd = $this->retiraAcentos($i->produto->nome) . ' ' . $this->retiraAcentos($i->produto->acabamento->nome);
+            if ($i->produto->acabamento->nome) {
+                $stdProd->xProd = $this->retiraAcentos($i->produto->nome) . ' ' . $this->retiraAcentos($i->produto->acabamento->nome);
+            } else
+                $stdProd->xProd = $this->retiraAcentos($i->produto->nome);
 
             $ncm = $i->produto->ncm;
             $ncm = str_replace(".", "", $ncm);
@@ -394,7 +400,7 @@ class NFeService
         //ICMS TOTAL
         $stdICMSTot = new \stdClass();
         $stdICMSTot->vProd = $this->format($venda->valorTotal);
-        $stdICMSTot->vBC = $emitente->situacao_tributaria != 3 && $emitente->situacao_tributaria != 2 ? 0.00 : $this->format($venda->valorTotal);
+        $stdICMSTot->vBC = $this->format($venda->valorTotal);
         $stdICMSTot->vICMS = $emitente->situacao_tributaria != 3 && $emitente->situacao_tributaria != 2 ? 0.00 : $this->format($venda->valorTotal) * ($stdICMS->pICMS / 100);
         $stdICMSTot->vICMSDeson = 0.00;
         $stdICMSTot->vBCST = 0.00;
@@ -482,7 +488,9 @@ class NFeService
                 break;
 
             default:
-                # code...
+                $stdInfos = new \stdClass();
+                $stdInfos->infCpl = "";
+                $nfe->taginfAdic($stdInfos);
                 break;
         }
 
@@ -524,10 +532,9 @@ class NFeService
         try {
             $idLote = str_pad(100, 15, '0', STR_PAD_LEFT);
             $resp = $this->tools->sefazEnviaLote([$signXml], $idLote);
-
             $st = new Standardize();
             $std = $st->toStd($resp);
-            sleep(5);
+            sleep(2);
             if ($std->cStat != 103) {
 
                 return [
@@ -536,7 +543,7 @@ class NFeService
             }
             $recibo = $std->infRec->nRec;
             $protocolo = $this->tools->sefazConsultaRecibo($recibo);
-            sleep(5);
+            sleep(2);
             try {
                 $xml = Complements::toAuthorize($signXml, $protocolo);
                 return [
@@ -579,40 +586,16 @@ class NFeService
             } else {
                 $cStat = $std->retEvento->infEvento->cStat;
                 if ($cStat == '101' || $cStat == '135' || $cStat == '155') {
-                    $xml = Complements::cancelRegister($xml_venda, $response);                    
+                    $xml = Complements::cancelRegister($xml_venda, $response);
                     return [
                         'sucesso' => $xml
-                    ];                  
-                    
+                    ];
                 } else {
                     return ['erro' => true, 'data' => $arr];
                 }
             }
         } catch (\Exception $e) {
             return ['erro' => true, 'data' => $e->getMessage()];
-        }
-    }
-
-    public function vincularCancelamento($venda, $xml_venda)
-    {
-        $chave = $venda->chave;
-        $response = $this->tools->sefazConsultaChave($chave);
-
-        $stdCl = new Standardize($response);
-        // $arr = $stdCl->toArray();
-
-        $nfe = $xml_venda;
-        $cancelamento = $response;
-
-        try {
-            $xml = Complements::cancelRegister($nfe, $cancelamento);
-            
-            return [
-                'sucesso' => $xml
-            ];
-         
-        } catch (\Exception $e) {
-            echo "Erro: " . $e->getMessage();
         }
     }
 
@@ -647,6 +630,61 @@ class NFeService
             return ['erro' => true, 'data' => $e->getMessage()];
         }
     }
+
+
+
+    public function inutilizacao($emitente, $notaInicial,  $notaFinal, $justificativa)
+    {
+        try {
+
+            $nSerie = $emitente;
+            $nIni =  $notaInicial;
+            $nFin = $notaFinal;
+            $xJust = $justificativa;
+            $response = $this->tools->sefazInutiliza($nSerie, $nIni, $nFin, $xJust);
+
+            //você pode padronizar os dados de retorno atraves da classe abaixo
+            //de forma a facilitar a extração dos dados do XML
+            //NOTA: mas lembre-se que esse XML muitas vezes será necessário, 
+            //      quando houver a necessidade de protocolos
+            $stdCl = new Standardize($response);
+            //nesse caso $std irá conter uma representação em stdClass do XML
+            $std = $stdCl->toStd();
+            //nesse caso o $arr irá conter uma representação em array do XML
+            $arr = $stdCl->toArray();
+            //nesse caso o $json irá conter uma representação em JSON do XML
+            $json = $stdCl->toJson();
+
+            return [
+                'sucesso' => $std
+            ];
+        } catch (\Exception $e) {
+            return ['erro' => true, 'data' => $e->getMessage()];
+        }
+    }
+
+    public function vincularCancelamento($venda, $xml_venda)
+    {
+        $chave = $venda->chave;
+        $response = $this->tools->sefazConsultaChave($chave);
+
+        $stdCl = new Standardize($response);
+        // $arr = $stdCl->toArray();
+
+        $nfe = $xml_venda;
+        $cancelamento = $response;
+
+        try {
+            $xml = Complements::cancelRegister($nfe, $cancelamento);
+
+            return [
+                'sucesso' => $xml
+            ];
+        } catch (\Exception $e) {
+            echo "Erro: " . $e->getMessage();
+        }
+    }
+
 
 
 

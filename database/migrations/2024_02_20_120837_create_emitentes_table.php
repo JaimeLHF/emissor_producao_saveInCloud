@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('emitentes', function (Blueprint $table) {
             $table->id();
             $table->string('razao_social');
-            $table->string('nome_fantasia');
+            $table->string('nome_fantasia')->nullable();
             $table->string('rua');
             $table->string('numero_endereco');
             $table->string('bairro');
@@ -29,14 +29,15 @@ return new class extends Migration
             $table->integer('numero_serie_nfe');
             $table->integer('sequencia_evento');
             $table->string('cpf_cnpj');
-            $table->string('ie_rg');
+            $table->string('ie_rg')->nullable();
+            $table->string('im')->nullable();
             $table->string('fone')->nullable();
             $table->binary('certificado')->nullable();
             $table->string('senha');
             $table->integer('ambiente');
             $table->integer('situacao_tributaria');
-            $table->string('logradouro');
-            $table->float('percentual_aliquota_icms');
+            $table->string('logradouro')->nullable();
+            $table->float('percentual_aliquota_icms')->nullable();
             $table->integer('codigo_uf');
             $table->timestamps();
         });

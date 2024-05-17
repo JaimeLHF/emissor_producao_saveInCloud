@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('xml_vendas', function (Blueprint $table) {
 
             $table->id();
-            $table->unsignedBigInteger('venda_id');                 
+            $table->unsignedBigInteger('venda_id');      
+            $table->longtext('xml');
+            $table->enum('status', ['Novo', 'Rejeitado', 'Cancelado', 'Aprovado']);
             $table->timestamps();
 
             $table->foreign('venda_id')->references('id')

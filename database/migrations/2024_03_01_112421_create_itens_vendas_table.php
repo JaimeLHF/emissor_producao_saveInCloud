@@ -16,11 +16,11 @@ return new class extends Migration
             $table->unsignedBigInteger('venda_id');
             $table->unsignedBigInteger('produto_id');
             $table->float('qtd');
-            $table->float('valor');
+            $table->double('valor', 10, 2);
             $table->timestamps();
 
             $table->foreign('venda_id')->references('id')
-            ->on('vendas')->onDelete('cascade');
+                ->on('vendas')->onDelete('cascade');
         });
     }
 

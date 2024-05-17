@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
-            $table->unsignedBigInteger('acabamento_id');
+            $table->enum('tipo', ['Matéria-prima', 'Produto Acabado']);
+            $table->unsignedBigInteger('acabamento_id')->nullable();
             $table->float('valor');
             $table->char('cfop_interno');
             $table->char('cfop_externo');
             $table->char('ncm');
+            $table->string('orig');
             $table->char('codigo_barras')->nullable();
             $table->char('und_venda');
             $table->char('cst_csosn');

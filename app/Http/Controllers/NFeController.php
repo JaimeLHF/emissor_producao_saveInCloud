@@ -8,10 +8,74 @@ use App\Models\Emitente;
 use App\Models\XML;
 use App\Services\NFeService;
 use InvalidArgumentException;
+use NFePHP\Common\Certificate;
+use NFePHP\Common\Soap\SoapFake;
 use NFePHP\DA\NFe\Danfe;
+use NFePHP\NFe\Tools;
 
 class NFeController extends Controller
 {
+
+    public function contingency()
+    {
+
+        $emitente = Emitente::first();
+
+        $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
+        $cnpj = str_replace("/", "", $cnpj);
+        $cnpj = str_replace("-", "", $cnpj);
+        $cnpj = str_replace(" ", "", $cnpj);
+
+        // Configurações do ambiente e da NFe
+        $arr = [
+            "atualizacao" => "2016-11-03 18:01:21",
+            "tpAmb" => 2,
+            "razaosocial" => $emitente->razao_social,
+            "siglaUF" => $emitente->uf,
+            "cnpj" => $cnpj,
+            "schemes" => "PL_009_V4",
+            "versao" => '4.00',
+            "tokenIBPT" => "AAAAAAA",
+            "CSC" => "GPB0JBWLUR6HWFTVEAS6RJ69GPCROFPBBB8G",
+            "CSCid" => "000001",
+            "proxyConf" => [
+                "proxyIp" => "",
+                "proxyPort" => "",
+                "proxyUser" => "",
+                "proxyPass" => ""
+            ]
+        ];
+
+        // Converte as configurações para JSON
+        $configJson = json_encode($arr);
+
+        // Carrega o conteúdo do certificado digital
+        $content = file_get_contents('../public/7f28240503584d84 DRD DAVI.pfx');
+    
+ 
+        // Configuração do SOAP
+        $soap = new SoapFake();
+        $soap->disableCertValidation(true);
+        $soap->protocol(6);
+        $soap->httpVersion('1.1');
+
+        // Instancia a classe Tools
+        $tools = new Tools($configJson, Certificate::readPfx($content, 'DRDmoveis1234*'));
+        $tools->model('55');
+        $tools->loadSoapClass($soap);
+
+        // Ativa a contingência e grava a informação
+        $contingencia = $tools->contingency->deactivate();
+        // NOTA: Essa informação deve ser gravada na base de dados ou em arquivo para uso posterior
+        $tools->contingency->load($contingencia);
+
+        // Transmitir a NFe usando o método sefazStatus(), que detectará automaticamente se a contingência está ativa
+        $response = $tools->sefazStatus();
+
+        header('Content-type: xml; charset=UTF-8');
+        echo $contingencia;
+    }
+
 
     public function gerarXml($id)
     {
@@ -126,7 +190,7 @@ class NFeController extends Controller
         }
     }
 
-    public function cancenlarNFe(Request $request)
+    public function cancelarNFe(Request $request)
     {
         try {
 
@@ -181,6 +245,42 @@ class NFeController extends Controller
         }
     }
 
+    public function inutilizarNfe(Request $request)
+    {
+        try {
+            $emitente = Emitente::first();
+
+            if ($emitente == null) {
+                return response()->json('Configure o emitente', 404);
+            }
+
+            $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
+            $cnpj = str_replace("/", "", $cnpj);
+            $cnpj = str_replace("-", "", $cnpj);
+            $cnpj = str_replace(" ", "", $cnpj);
+
+            $nfe_service = new NFeService([
+                "atualizacao" => date('Y-m-d h:i:s'),
+                "tpAmb" => (int)$emitente->ambiente,
+                "razaosocial" => $emitente->razao_social,
+                "siglaUF" => $emitente->uf,
+                "cnpj" => $cnpj,
+                "schemes" => "PL_009_V4",
+                "versao" => "4.00",
+                "tokenIBPT" => "AAAAAAA",
+                "CSC" => "AAAAAAA",
+                "CSCid" => "000001"
+            ], $emitente);
+
+            $nfe = $nfe_service->inutilizacao($emitente->numero_serie_nfe, $request->notaInicial, $request->notaFinal, $request->justificativa);
+
+            return response()->json($nfe, 200);
+            
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 404);
+        }
+    }
+
     public function consultaNFe($id)
     {
         $venda = Vendas::with('cliente', 'itens.produto', 'fatura')->find($id);
@@ -214,7 +314,7 @@ class NFeController extends Controller
         $venda = Vendas::with('cliente', 'itens.produto', 'fatura')->find($request->venda_id);
         $emitente = Emitente::first();
         $xml_venda = XML::where('venda_id', $venda->id)->first();
- 
+
         $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
         $cnpj = str_replace("/", "", $cnpj);
         $cnpj = str_replace("-", "", $cnpj);
@@ -232,7 +332,7 @@ class NFeController extends Controller
             "CSC" => "AAAAAAA",
             "CSCid" => "000001"
         ], $emitente);
-        
+
         $result = $nfe_service->consultaNFe($venda);
 
         $nfe = $nfe_service->vincularCancelamento($venda, $xml_venda->xml);
