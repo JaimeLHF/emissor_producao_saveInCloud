@@ -1,0 +1,19 @@
+{
+    "name": "edigomes/download-nfe-sefaz",
+    "description": "API Para download de XML da NFe direto pelo site da fazenda",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Edimario Gomes",
+            "email": "edi.gomes00@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DownloadNFeSefaz\\": "src"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {}
+}
