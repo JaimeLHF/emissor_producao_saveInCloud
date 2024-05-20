@@ -1335,13 +1335,13 @@ class Danfe extends DaCommon
             $n = count($resp['message']);
             $alttot = $n * 15;
             $x = 10;
-            $y = $this->hPrint / 2 - $alttot / 2;
+            $y = $this->hPrint / 1.5 - $alttot / 1.5;
             $h = 15;
             $w = $maxW - (2 * $x);
-            $this->pdf->settextcolor(170, 170, 170);
+            $this->pdf->settextcolor(120, 120, 120);
 
             foreach ($resp['message'] as $msg) {
-                $aFont = ['font' => $this->fontePadrao, 'size' => 48, 'style' => 'B'];
+                $aFont = ['font' => $this->fontePadrao, 'size' => 52, 'style' => 'B'];
                 $this->pdf->textBox($x, $y, $w, $h, $msg, $aFont, 'C', 'C', 0, '');
                 $y += $h;
             }
@@ -1355,7 +1355,7 @@ class Danfe extends DaCommon
             }
             $y += 5;
             $w = $maxW - (2 * $x);
-            $texto = "SEM VALOR FISCAL";
+            $texto = "";
             $aFont = ['font' => $this->fontePadrao, 'size' => 48, 'style' => 'B'];
             $this->pdf->textBox($x, $y, $w, $h, $texto, $aFont, 'C', 'C', 0, '');
             $this->pdf->settextcolor(0, 0, 0);
