@@ -11,7 +11,7 @@ class Clientes extends Model
 
     protected $fillable = [
         'nome', 'ie_rg', 'cpf_cnpj', 'contribuinte', 'cep', 'rua', 'numero', 'codigo_municipio', 
-        'codigo_pais', 'pais', 'bairro', 'logradouro', 'municipio', 'uf', 'complemento', 'telefone', 'email'
+        'codigo_pais', 'pais', 'bairro', 'logradouro', 'municipio', 'uf', 'logradouro', 'telefone', 'email', 'complemento'
     ];
 
     public static function rules()
@@ -27,10 +27,10 @@ class Clientes extends Model
             'codigo_pais' => 'required|numeric',
             'pais' => 'required|string',
             'bairro' => 'required|string',
-            'logradouro' => 'string',
+            'logradouro' => 'string|nullable',
             'municipio' => 'required|string',
             'uf' => 'required|string',
-            'complemento' => 'string',
+            'complemento' => 'string|nullable',
             'telefone' => 'required|string',
             'email' => 'string',
         ];

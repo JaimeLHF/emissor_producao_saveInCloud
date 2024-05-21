@@ -76,7 +76,6 @@ class NFeController extends Controller
         echo $contingencia;
     }
 
-
     public function gerarXml($id)
     {
         try {
@@ -152,6 +151,8 @@ class NFeController extends Controller
 
                 if (!isset($result['erros_xml'])) {
                     $signed = $nfe_service->sign($result['xml']);
+                    echo 'Até aqui!';
+                    die;
                     $resultado = $nfe_service->transmitir($signed, $result['chave']);
                     if (isset($resultado['sucesso'])) {
                         $venda->chave = $result['chave'];
@@ -305,40 +306,6 @@ class NFeController extends Controller
         ], $emitente);
 
         $result = $nfe_service->consultaNFe($venda);
-
-        return response()->json($result, 200);
-    }
-
-    public function vincular(Request $request)
-    {
-        $venda = Vendas::with('cliente', 'itens.produto', 'fatura')->find($request->venda_id);
-        $emitente = Emitente::first();
-        $xml_venda = XML::where('venda_id', $venda->id)->first();
-
-        $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
-        $cnpj = str_replace("/", "", $cnpj);
-        $cnpj = str_replace("-", "", $cnpj);
-        $cnpj = str_replace(" ", "", $cnpj);
-
-        $nfe_service = new NFeService([
-            "atualizacao" => date('Y-m-d h:i:s'),
-            "tpAmb" => (int)$emitente->ambiente,
-            "razaosocial" => $emitente->razao_social,
-            "siglaUF" => $emitente->uf,
-            "cnpj" => $cnpj,
-            "schemes" => "PL_009_V4",
-            "versao" => "4.00",
-            "tokenIBPT" => "AAAAAAA",
-            "CSC" => "AAAAAAA",
-            "CSCid" => "000001"
-        ], $emitente);
-
-        $result = $nfe_service->consultaNFe($venda);
-
-        $nfe = $nfe_service->vincularCancelamento($venda, $xml_venda->xml);
-
-        $xml_venda->xml = $nfe['sucesso'];
-        $xml_venda->save();
 
         return response()->json($result, 200);
     }
