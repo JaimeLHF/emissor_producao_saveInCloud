@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreign('venda_id')->references('id')->on('vendas')->onDelete('cascade');
             $table->string('status');
             $table->double('valor', 10, 2);
-            $table->double('valor', 10, 2);        
+            $table->double('valor_ipi', 10, 2);        
             $table->string('forma_pagamento');
             $table->date('vencimento');
             $table->timestamps();

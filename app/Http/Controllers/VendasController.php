@@ -33,7 +33,8 @@ class VendasController extends Controller
                 'numero_nfe' => 0,
                 'modFrete' => $venda['modFrete'],
                 'vFrete' => $venda['vFrete'],
-                'status' => 'Novo'
+                'status' => 'Novo',
+                'infCpl' => $venda['infCpl']
             ]);
 
             //Itens da venda

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('xml_vendas', function (Blueprint $table) {
+        Schema::create('x_m_l_s', function (Blueprint $table) {
 
             $table->id();
             $table->unsignedBigInteger('venda_id');      

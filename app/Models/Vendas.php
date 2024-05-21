@@ -28,6 +28,7 @@ class Vendas extends Model
             'vFrete' => 'required|numeric',
             'modFrete' => 'required|string', 
             'natOp' => 'required|string',
+            'infCpl' => 'string'
         ];
     }
 

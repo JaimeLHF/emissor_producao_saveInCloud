@@ -19,9 +19,10 @@ return new class extends Migration
             $table->integer('sequencia_evento');
             $table->integer('modFrete')->nullable();
             $table->string('natOp');
-            $table->string('motivo_rejeitado');
+            $table->string('infCpl')->nullable();
+            $table->string('motivo_rejeitado')->nullable();
             $table->integer('finNFe');
-            $table->timestamps();            
+            $table->timestamps();
         });
     }
 

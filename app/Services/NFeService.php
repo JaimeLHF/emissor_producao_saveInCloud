@@ -8,8 +8,6 @@ use NFePHP\Common\Certificate;
 use NFePHP\NFe\Common\Standardize;
 use App\Models\Vendas;
 use NFePHP\NFe\Complements;
-use NFePHP\Common\Soap\SoapCurl;
-use NFePHP\Common\Soap\SoapFake;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
@@ -25,8 +23,6 @@ class NFeService
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
         $this->tools->model(55);
     }
-
-
 
     public function consultaNFe($venda)
     {
@@ -489,7 +485,7 @@ class NFeService
 
             default:
                 $stdInfos = new \stdClass();
-                $stdInfos->infCpl = "";
+                $stdInfos->infCpl = $venda->infCpl;
                 $nfe->taginfAdic($stdInfos);
                 break;
         }
@@ -631,8 +627,6 @@ class NFeService
         }
     }
 
-
-
     public function inutilizacao($emitente, $notaInicial,  $notaFinal, $justificativa)
     {
         try {
@@ -662,30 +656,6 @@ class NFeService
             return ['erro' => true, 'data' => $e->getMessage()];
         }
     }
-
-    public function vincularCancelamento($venda, $xml_venda)
-    {
-        $chave = $venda->chave;
-        $response = $this->tools->sefazConsultaChave($chave);
-
-        $stdCl = new Standardize($response);
-        // $arr = $stdCl->toArray();
-
-        $nfe = $xml_venda;
-        $cancelamento = $response;
-
-        try {
-            $xml = Complements::cancelRegister($nfe, $cancelamento);
-
-            return [
-                'sucesso' => $xml
-            ];
-        } catch (\Exception $e) {
-            echo "Erro: " . $e->getMessage();
-        }
-    }
-
-
 
 
     ////////// Funções secundárias /////////
