@@ -19,8 +19,9 @@ class NFeService
 
     public function __construct($config, $emitente)
     {
-        $certificadoDigital = file_get_contents('../public/certificado.pfx');
+        $certificadoDigital = file_get_contents('../public/certificado.pfx');        
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
+        echo 'Certificado Read!';        
         $this->tools->model(55);
     }
 
