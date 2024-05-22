@@ -150,15 +150,15 @@ class NFeController extends Controller
                 $result = $nfe_service->gerarXml($venda, $emitente);
 
                 if (!isset($result['erros_xml'])) {
-                    $signed = $nfe_service->sign($result['xml']);
-                    echo 'Até aqui!';
-                    die;
+                    $signed = $nfe_service->sign($result['xml']);                    
                     $resultado = $nfe_service->transmitir($signed, $result['chave']);
+                  
                     if (isset($resultado['sucesso'])) {
                         $venda->chave = $result['chave'];
                         $venda->status = 'Aprovado';
                         $venda->numero_nfe = $result['nNf'];
-
+                        echo 'Até aqui';
+                        die;
                         XML::create(
                             [
 

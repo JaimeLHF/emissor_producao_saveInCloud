@@ -19,7 +19,7 @@ class NFeService
 
     public function __construct($config, $emitente)
     {
-        $certificadoDigital = file_get_contents('../public/7f28240503584d84 DRD DAVI.pfx');
+        $certificadoDigital = file_get_contents('../public/certificado.pfx');
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
         $this->tools->model(55);
     }
@@ -524,7 +524,6 @@ class NFeService
 
     public function transmitir($signXml)
     {
-
         try {
             $idLote = str_pad(100, 15, '0', STR_PAD_LEFT);
             $resp = $this->tools->sefazEnviaLote([$signXml], $idLote);
