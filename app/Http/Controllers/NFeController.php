@@ -157,8 +157,6 @@ class NFeController extends Controller
                         $venda->chave = $result['chave'];
                         $venda->status = 'Aprovado';
                         $venda->numero_nfe = $result['nNf'];
-                        echo 'Até aqui';
-                        die;
                         XML::create(
                             [
 
