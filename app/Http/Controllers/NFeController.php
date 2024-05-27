@@ -154,6 +154,7 @@ class NFeController extends Controller
                     $resultado = $nfe_service->transmitir($signed, $result['chave']);
                   
                     if (isset($resultado['sucesso'])) {
+                        $venda->motivo_rejeitado = null;
                         $venda->chave = $result['chave'];
                         $venda->status = 'Aprovado';
                         $venda->numero_nfe = $result['nNf'];
