@@ -10,7 +10,7 @@ class XML extends Model
     use HasFactory;
 
     protected $fillable = [
-        'venda_id', 'xml', 'status'
+        'venda_id', 'xml', 'status', 'tipo'
     ];
 
 

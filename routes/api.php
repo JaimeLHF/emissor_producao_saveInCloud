@@ -7,6 +7,8 @@ use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\ItensVendaController;
 use App\Http\Controllers\NFeController;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\Transportadora;
+use App\Http\Controllers\TransportadoraController;
 use App\Http\Controllers\VendasController;
 use App\Services\NFeService;
 use Illuminate\Http\Request;
@@ -46,6 +48,15 @@ Route::group(['prefix' => 'clientes'], function () {
     Route::delete('/delete/{id}', [ClienteController::class, 'deleteById']);
 });
 
+//Transportadoras
+Route::group(['prefix' => 'transportadora'], function () {
+    Route::get('/', [TransportadoraController::class, 'getAllTransportadoras']);
+    Route::get('/{id}', [TransportadoraController::class, 'getBydId']);
+    Route::post('/new', [TransportadoraController::class, 'newTrans']);
+    Route::put('/update/{id}', [TransportadoraController::class, 'updateById']);
+    Route::delete('/delete/{id}', [TransportadoraController::class, 'deleteById']);
+});
+
 //Emitente
 Route::group(['prefix' => 'emitente'], function () {
     Route::get('/', [EmitenteController::class, 'getEmitente']);
@@ -81,11 +92,11 @@ Route::group(['prefix' => 'nfe'], function () {
     Route::get('/gerarXml/{id}', [NFeController::class, 'gerarXml']);
     Route::get('/download/{id}', [NFeController::class, 'download']);
     Route::get('/imprimir/{id}', [NFeController::class, 'imprimir']);
-    Route::get('/imprimirNota/{numero_nfe}', [NFeController::class, 'imprimirNota']);
-    Route::get('/imprimirCancelamento/{id}', [NFeController::class, 'imprimirCancelamento']);
+    Route::get('/imprimirNota/{numero_nfe}', [NFeController::class, 'imprimirNota']);   
     Route::post('/inutilizar', [NFeController::class, 'inutilizarNfe']);
+    Route::get('/imprimirCCe/{id}', [NFeController::class, 'imprimirCCe']);
     Route::get('/consulta/{id}', [NFeController::class, 'consultaNFe']);
-    Route::get('/contingency', [NFeController::class, 'contingency']);
+    Route::post('/cartaCorrecao', [NFeController::class, 'cartaCorrecao']);
     Route::post('/transmitir', [NFeController::class, 'transmitir']);
     Route::post('/cancelar', [NFeController::class, 'cancelarNFe']);
 });

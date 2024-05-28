@@ -10,6 +10,7 @@ use App\Services\NFeService;
 use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Soap\SoapFake;
+use NFePHP\DA\NFe\Daevento;
 use NFePHP\DA\NFe\Danfe;
 use NFePHP\NFe\Tools;
 
@@ -51,8 +52,8 @@ class NFeController extends Controller
 
         // Carrega o conteúdo do certificado digital
         $content = file_get_contents('../public/7f28240503584d84 DRD DAVI.pfx');
-    
- 
+
+
         // Configuração do SOAP
         $soap = new SoapFake();
         $soap->disableCertValidation(true);
@@ -150,9 +151,9 @@ class NFeController extends Controller
                 $result = $nfe_service->gerarXml($venda, $emitente);
 
                 if (!isset($result['erros_xml'])) {
-                    $signed = $nfe_service->sign($result['xml']);                    
+                    $signed = $nfe_service->sign($result['xml']);
                     $resultado = $nfe_service->transmitir($signed, $result['chave']);
-                  
+
                     if (isset($resultado['sucesso'])) {
                         $venda->motivo_rejeitado = null;
                         $venda->chave = $result['chave'];
@@ -163,6 +164,7 @@ class NFeController extends Controller
 
                                 'venda_id' => $venda->id,
                                 'status' => $venda->status,
+                                'tipo' => 'NFe',
                                 'xml' => $resultado['sucesso']
 
                             ]
@@ -196,7 +198,7 @@ class NFeController extends Controller
 
             $venda = Vendas::with('xml')->find($request->venda_id);
             $emitente = Emitente::first();
-            $xml_venda = XML::where('venda_id', $venda->id)->first();
+            $xml_venda = XML::where('venda_id', $venda->id)->where('tipo', 'NFe')->first();
 
             if ($emitente == null) {
                 return response()->json('Configure o emitente', 404);
@@ -245,6 +247,65 @@ class NFeController extends Controller
         }
     }
 
+    public function cartaCorrecao(Request $request)
+    {
+        try {
+            $venda = Vendas::with('xml')->find($request->venda_id);
+            $emitente = Emitente::first();
+            $xml_venda = XML::where('venda_id', $venda->id)->first();
+
+            if ($emitente == null) {
+                return response()->json('Configure o emitente', 404);
+            }
+
+            $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
+            $cnpj = str_replace("/", "", $cnpj);
+            $cnpj = str_replace("-", "", $cnpj);
+            $cnpj = str_replace(" ", "", $cnpj);
+
+            $nfe_service = new NFeService([
+                "atualizacao" => date('Y-m-d h:i:s'),
+                "tpAmb" => (int)$emitente->ambiente,
+                "razaosocial" => $emitente->razao_social,
+                "siglaUF" => $emitente->uf,
+                "cnpj" => $cnpj,
+                "schemes" => "PL_009_V4",
+                "versao" => "4.00",
+                "tokenIBPT" => "AAAAAAA",
+                "CSC" => "AAAAAAA",
+                "CSCid" => "000001"
+            ], $emitente);
+
+            $nfe = $nfe_service->cartaCorrecao($venda, $request->justificativa);
+
+
+            if (!isset($nfe['erro'])) {
+
+                $venda->save();
+
+                // $xml_venda->xml = $nfe['sucesso'];
+
+                XML::create(
+                    [
+
+                        'venda_id' => $venda->id,
+                        'status' => $venda->status,
+                        'tipo' => 'CCe',
+                        'xml' => $nfe['sucesso']
+
+                    ]
+                );
+                $xml_venda->save();
+
+                return response()->json($nfe, 200);
+            } else {
+                return response()->json($nfe['data'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json($e->getMessage(), 404);
+        }
+    }
+
     public function inutilizarNfe(Request $request)
     {
         try {
@@ -275,7 +336,6 @@ class NFeController extends Controller
             $nfe = $nfe_service->inutilizacao($emitente->numero_serie_nfe, $request->notaInicial, $request->notaFinal, $request->justificativa);
 
             return response()->json($nfe, 200);
-            
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 404);
         }
@@ -333,7 +393,7 @@ class NFeController extends Controller
     {
         date_default_timezone_set('America/Sao_Paulo');
         $venda = Vendas::with('xml')->find($id);
-        $xmlContent  = $venda->xml->first()->xml;
+        $xmlContent  = $venda->xml->where('tipo', 'NFe')->first()->xml;
 
         $xml = $xmlContent;
         $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/drd_logo.jpg')));
@@ -423,6 +483,50 @@ class NFeController extends Controller
             // $danfe->logoParameters($logo, 'C', false);
             //Gera o PDF
             $pdf = $danfe->render($logo);
+            header('Content-Type: application/pdf');
+            echo $pdf;
+        } catch (InvalidArgumentException $e) {
+            echo "Ocorreu um erro durante o processamento :" . $e->getMessage();
+        }
+    }
+
+    public function imprimirCCe($id)
+    {
+        date_default_timezone_set('America/Sao_Paulo');
+        $venda = Vendas::with('xml')->find($id);
+        $xmlContent  = $venda->xml->where('tipo', 'CCe')->first()->xml;
+
+        $emitente = Emitente::first();
+
+        $cnpj = str_replace(".", "", $emitente->cpf_cnpj);
+        $cnpj = str_replace("/", "", $cnpj);
+        $cnpj = str_replace("-", "", $cnpj);
+        $cnpj = str_replace(" ", "", $cnpj);
+
+        $nfe_service = [
+            "atualizacao" => date('Y-m-d h:i:s'),
+            "tpAmb" => (int)$emitente->ambiente,
+            "razaosocial" => $emitente->razao_social,
+            "siglaUF" => $emitente->uf,
+            "cnpj" => $cnpj,
+            "schemes" => "PL_009_V4",
+            "versao" => "4.00",
+            "tokenIBPT" => "AAAAAAA",
+            "CSC" => "AAAAAAA",
+            "CSCid" => "000001"
+        ];
+
+        $xml = $xmlContent;
+        $logo = 'data://text/plain;base64,' . base64_encode(file_get_contents(realpath('../public/drd_logo.jpg')));
+
+        try {
+
+            $daevento = new Daevento($xml, $nfe_service);
+            $daevento->debugMode(true);
+            $daevento->creditsIntegratorFooter('WEBNFe Sistemas - http://www.webenf.com.br');
+            $daevento->printParameters('P', 'A4');
+            $daevento->logoParameters($logo, 'R');
+            $pdf = $daevento->render();
             header('Content-Type: application/pdf');
             echo $pdf;
         } catch (InvalidArgumentException $e) {

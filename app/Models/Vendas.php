@@ -11,7 +11,7 @@ class Vendas extends Model
 
 
     protected $fillable = [
-        'valorTotal', 'cliente_id', 'chave', 'numero_nfe', 'status', 'sequencia_evento', 'natOp', 'finNFe', 'motivo_rejeitado', 'vFrete', 'modFrete'
+        'valorTotal', 'cliente_id', 'chave', 'numero_nfe', 'status', 'sequencia_evento', 'natOp', 'finNFe', 'motivo_rejeitado', 'vFrete', 'modFrete', 'transp_id'
     ];
 
 
@@ -20,6 +20,7 @@ class Vendas extends Model
         return [
             'valorTotal' => 'required|numeric',
             'cliente_id' => 'required|exists:clientes,id',
+            'transp_id' => 'exists:transportadoras,id',
             'chave' => 'required|string',
             'numero_nfe' => 'required|numeric',
             'status' => 'required|string',
@@ -52,6 +53,12 @@ class Vendas extends Model
     {
         return $this->belongsTo(Clientes::class, 'cliente_id');
     }
+
+    public function transportadora()
+    {
+        return $this->belongsTo(Transportadora::class, 'transp_id');
+    }
+
 
     public function itens()
     {

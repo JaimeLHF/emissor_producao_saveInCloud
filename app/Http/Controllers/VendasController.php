@@ -34,7 +34,8 @@ class VendasController extends Controller
                 'modFrete' => $venda['modFrete'],
                 'vFrete' => $venda['vFrete'],
                 'status' => 'Novo',
-                'infCpl' => $venda['infCpl']
+                'infCpl' => $venda['infCpl'],
+                'transp_id' => $venda['transp_id']
             ]);
 
             //Itens da venda
@@ -75,7 +76,7 @@ class VendasController extends Controller
     {
         try {
 
-            $venda = Vendas::with('cliente', 'itens.produto', 'fatura')->get();
+            $venda = Vendas::with('cliente', 'itens.produto', 'fatura', 'transportadora')->get();
 
             if (!$venda) {
                 return response()->json(['message' => 'venda não encontrada'], 404);
@@ -113,7 +114,7 @@ class VendasController extends Controller
     {
         try {
 
-            $item = Vendas::with('cliente', 'itens.produto', 'fatura')->find($id);
+            $item = Vendas::with('cliente', 'itens.produto', 'fatura', 'transportadora')->find($id);
 
             if (!$item) {
                 return response()->json(['message' => 'Venda não econtrada!'], 404);

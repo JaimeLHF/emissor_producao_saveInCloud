@@ -13,6 +13,7 @@ return new class extends Migration
             $table->float('valorTotal');
             $table->float('vFrete')->nullable();
             $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('transp_id')->constrained('transportadoras')->nullable();
             $table->string('chave', 44);
             $table->integer('numero_nfe');
             $table->enum('status', ['Novo', 'Rejeitado', 'Cancelado', 'Aprovado']);

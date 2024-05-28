@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('venda_id');      
             $table->longtext('xml');
+            $table->enum('tipo', ['NFe', 'CCe', 'Cancelamento', 'Inutilizacao']);
             $table->enum('status', ['Novo', 'Rejeitado', 'Cancelado', 'Aprovado']);
             $table->timestamps();
 

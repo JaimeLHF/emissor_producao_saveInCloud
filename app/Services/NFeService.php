@@ -211,7 +211,7 @@ class NFeService
             $stdProd->cEAN = $cod ? $i->produto->codigo_barras : 'SEM GTIN';
             $stdProd->cEANTrib = $cod ? $i->produto->codigo_barras : 'SEM GTIN';
             $stdProd->cProd = $i->produto->id;
-            if ($i->produto->acabamento->nome) {
+            if ($i->produto->acabamento_id !== null) {
                 $stdProd->xProd = $this->retiraAcentos($i->produto->nome) . ' ' . $this->retiraAcentos($i->produto->acabamento->nome);
             } else
                 $stdProd->xProd = $this->retiraAcentos($i->produto->nome);
@@ -419,6 +419,16 @@ class NFeService
         $stdTransp->modFrete = $venda->modFrete; //verificar, colocar no cadastro da venda
         $nfe->tagtransp($stdTransp);
 
+        //Transportadora/Frete
+        $stdTransportdora = new \stdClass();
+        $stdTransportdora->xNome = $venda->transportadora->nome;
+        $stdTransportdora->CNPJ = $venda->transportadora->cpf_cnpj;
+        $stdTransportdora->IE = $venda->transportadora->ie_rg;
+        $stdTransportdora->xEnder = $venda->transportadora->rua . ' ' . $venda->transportadora->numero;
+        $stdTransportdora->xMun = $venda->transportadora->municipio;
+        $stdTransportdora->UF = $venda->transportadora->uf;
+        $nfe->tagtransporta($stdTransportdora);
+
         ////////////////////////////////////////////////////////////////////
 
         //FATURA
@@ -606,17 +616,19 @@ class NFeService
             $stdCl = new Standardize($response);
             $std = $stdCl->toStd();
             $arr = $stdCl->toArray();
-            $json = $stdCl->toJson();
+        
             if ($std->cStat != 128) {
             } else {
                 $cStat = $std->retEvento->infEvento->cStat;
                 if ($cStat == '135' || $cStat == '136') {
-                    $xml = Complements::toAuthorize($this->tools->lastRequest, $response);
-                    file_put_contents(public_path('xml_nfe_correcao/') . $chave . '.xml', $xml);
+                    $xml = Complements::toAuthorize($this->tools->lastRequest, $response); 
 
                     $venda->sequencia_evento += 1;
                     $venda->save();
-                    return $json;
+
+                    return [
+                        'sucesso' => $xml
+                    ];                                   
                 } else {
                     return ['erro' => true, 'data' => $arr];
                 }
@@ -636,17 +648,9 @@ class NFeService
             $xJust = $justificativa;
             $response = $this->tools->sefazInutiliza($nSerie, $nIni, $nFin, $xJust);
 
-            //você pode padronizar os dados de retorno atraves da classe abaixo
-            //de forma a facilitar a extração dos dados do XML
-            //NOTA: mas lembre-se que esse XML muitas vezes será necessário, 
-            //      quando houver a necessidade de protocolos
             $stdCl = new Standardize($response);
             //nesse caso $std irá conter uma representação em stdClass do XML
             $std = $stdCl->toStd();
-            //nesse caso o $arr irá conter uma representação em array do XML
-            $arr = $stdCl->toArray();
-            //nesse caso o $json irá conter uma representação em JSON do XML
-            $json = $stdCl->toJson();
 
             return [
                 'sucesso' => $std
