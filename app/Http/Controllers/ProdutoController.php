@@ -8,18 +8,19 @@ use Illuminate\Validation\ValidationException;
 
 class ProdutoController extends Controller
 {
-   
+
     public function getAllProducts()
     {
         try {
-
+            header('Acess-Control-Allow-Origin: http://localhost:5173');
+            header('Acess-Control-Allow-Methods: PUT, PATCH, POST, DELETE');
             $produtos = Produtos::with('acabamento')->get();
 
             if (!$produtos) {
                 return response()->json(['message' => 'Produtos não encontrado'], 404);
             }
 
-            return response()->json(['produtos:' => $produtos], 200);
+            return response()->json($produtos, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -46,7 +47,8 @@ class ProdutoController extends Controller
         try {
 
             // $request->validate([$request->all()]);
-
+            header('Acess-Control-Allow-Origin: http://localhost:5173');
+            header('Acess-Control-Allow-Methods: PUT, PATCH, POST, DELETE');
             $produtosCriados = [];
 
             foreach ($request->produtos as $produtoData) {

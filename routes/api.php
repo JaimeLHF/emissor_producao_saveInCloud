@@ -7,8 +7,6 @@ use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\ItensVendaController;
 use App\Http\Controllers\NFeController;
 use App\Http\Controllers\ProdutoController;
-use App\Http\Controllers\Transportadora;
-use App\Http\Controllers\TransportadoraController;
 use App\Http\Controllers\VendasController;
 use App\Services\NFeService;
 use Illuminate\Http\Request;
@@ -17,8 +15,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-Route::get('/gerarArray', [ProdutoController::class, 'gerarArray']);
 
 //Acabamentos
 Route::group(['prefix' => 'acabamentos'], function () {
@@ -36,7 +32,6 @@ Route::group(['prefix' => 'produtos'], function () {
     Route::post('/new', [ProdutoController::class, 'newProduto']);
     Route::put('/update/{id}', [ProdutoController::class, 'updateBydId']);
     Route::delete('/delete/{id}', [ProdutoController::class, 'deleteBydId']);
-    
 });
 
 //Clientes
@@ -46,15 +41,6 @@ Route::group(['prefix' => 'clientes'], function () {
     Route::post('/new', [ClienteController::class, 'newCliente']);
     Route::put('/update/{id}', [ClienteController::class, 'updateById']);
     Route::delete('/delete/{id}', [ClienteController::class, 'deleteById']);
-});
-
-//Transportadoras
-Route::group(['prefix' => 'transportadora'], function () {
-    Route::get('/', [TransportadoraController::class, 'getAllTransportadoras']);
-    Route::get('/{id}', [TransportadoraController::class, 'getBydId']);
-    Route::post('/new', [TransportadoraController::class, 'newTrans']);
-    Route::put('/update/{id}', [TransportadoraController::class, 'updateById']);
-    Route::delete('/delete/{id}', [TransportadoraController::class, 'deleteById']);
 });
 
 //Emitente
@@ -92,11 +78,10 @@ Route::group(['prefix' => 'nfe'], function () {
     Route::get('/gerarXml/{id}', [NFeController::class, 'gerarXml']);
     Route::get('/download/{id}', [NFeController::class, 'download']);
     Route::get('/imprimir/{id}', [NFeController::class, 'imprimir']);
-    Route::get('/imprimirNota/{numero_nfe}', [NFeController::class, 'imprimirNota']);   
-    Route::post('/inutilizar', [NFeController::class, 'inutilizarNfe']);
-    Route::get('/imprimirCCe/{id}', [NFeController::class, 'imprimirCCe']);
+    Route::get('/imprimirNota/{numero_nfe}', [NFeController::class, 'imprimirNota']);
+    Route::get('/imprimirCancelamento/{id}', [NFeController::class, 'imprimirCancelamento']);
+    Route::get('/contracnpj', [NFeController::class, 'contracnpj']);
     Route::get('/consulta/{id}', [NFeController::class, 'consultaNFe']);
-    Route::post('/cartaCorrecao', [NFeController::class, 'cartaCorrecao']);
     Route::post('/transmitir', [NFeController::class, 'transmitir']);
-    Route::post('/cancelar', [NFeController::class, 'cancelarNFe']);
+    Route::post('/cancelar', [NFeController::class, 'cancenlarNFe']);
 });

@@ -19,7 +19,7 @@ class NFeService
 
     public function __construct($config, $emitente)
     {
-        $certificadoDigital = file_get_contents('../public/certificado.pfx');        
+        $certificadoDigital = file_get_contents('../public/certificado.pfx');
         $this->tools = new Tools(json_encode($config), Certificate::readPfx($certificadoDigital, $emitente->senha));
         $this->tools->model(55);
     }
@@ -420,14 +420,16 @@ class NFeService
         $nfe->tagtransp($stdTransp);
 
         //Transportadora/Frete
-        $stdTransportdora = new \stdClass();
-        $stdTransportdora->xNome = $venda->transportadora->nome;
-        $stdTransportdora->CNPJ = $venda->transportadora->cpf_cnpj;
-        $stdTransportdora->IE = $venda->transportadora->ie_rg;
-        $stdTransportdora->xEnder = $venda->transportadora->rua . ' ' . $venda->transportadora->numero;
-        $stdTransportdora->xMun = $venda->transportadora->municipio;
-        $stdTransportdora->UF = $venda->transportadora->uf;
-        $nfe->tagtransporta($stdTransportdora);
+        if ($venda->transp_id) {
+            $stdTransportdora = new \stdClass();
+            $stdTransportdora->xNome = $venda->transportadora->nome;
+            $stdTransportdora->CNPJ = $venda->transportadora->cpf_cnpj;
+            $stdTransportdora->IE = $venda->transportadora->ie_rg;
+            $stdTransportdora->xEnder = $venda->transportadora->rua . ' ' . $venda->transportadora->numero;
+            $stdTransportdora->xMun = $venda->transportadora->municipio;
+            $stdTransportdora->UF = $venda->transportadora->uf;
+            $nfe->tagtransporta($stdTransportdora);
+        }
 
         ////////////////////////////////////////////////////////////////////
 
@@ -616,19 +618,19 @@ class NFeService
             $stdCl = new Standardize($response);
             $std = $stdCl->toStd();
             $arr = $stdCl->toArray();
-        
+
             if ($std->cStat != 128) {
             } else {
                 $cStat = $std->retEvento->infEvento->cStat;
                 if ($cStat == '135' || $cStat == '136') {
-                    $xml = Complements::toAuthorize($this->tools->lastRequest, $response); 
+                    $xml = Complements::toAuthorize($this->tools->lastRequest, $response);
 
                     $venda->sequencia_evento += 1;
                     $venda->save();
 
                     return [
                         'sucesso' => $xml
-                    ];                                   
+                    ];
                 } else {
                     return ['erro' => true, 'data' => $arr];
                 }
