@@ -18,7 +18,7 @@ class EmitenteController extends Controller
 
             $emitente->makeHidden(['certificado']);
 
-            return response()->json(['emitente:' => $emitente], 200);
+            return response()->json($emitente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -35,7 +35,7 @@ class EmitenteController extends Controller
 
             $emitente->makeHidden(['certificado']);
 
-            return response()->json(['emitente' => $emitente], 200);
+            return response()->json($emitente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -53,7 +53,7 @@ class EmitenteController extends Controller
 
             $emitente->update($request->all());
             
-            return response()->json(['emitente' => $emitente], 200);
+            return response()->json($emitente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -74,7 +74,7 @@ class EmitenteController extends Controller
 
             $emitente = Emitente::create($request->all());
 
-            return response()->json(['emitente:' => $emitente], 200);
+            return response()->json($emitente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

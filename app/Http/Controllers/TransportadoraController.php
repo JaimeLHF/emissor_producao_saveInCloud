@@ -18,7 +18,7 @@ class TransportadoraController extends Controller
                 return response()->json(['message' => 'Transportadoras não encontrado'], 404);
             }
 
-            return response()->json(['transportadora:' => $transportadora], 200);
+            return response()->json($transportadora, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -34,7 +34,7 @@ class TransportadoraController extends Controller
                 return response()->json(['message' => 'Transportadora não econtrado!'], 404);
             }
 
-            return response()->json(['transportadora' => $transportadora], 200);
+            return response()->json($transportadora, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -49,14 +49,14 @@ class TransportadoraController extends Controller
                 $existingTrans = Transportadora::where('cpf_cnpj', $request->input('cpf_cnpj'))->first();
     
                 if ($existingTrans) {
-                    return response()->json(['message' => 'Transportadora com o mesmo nome já existe'], 422);
+                    return response()->json(['message' => 'Transportadora já existe'], 422);
                 }
     
                 $request->validate(Transportadora::rules());
     
                 $trans = Transportadora::create($request->all());
     
-                return response()->json(['message' => 'Transportadora criado com sucesso', 'transportadora' => $trans], 201);
+                return response()->json(['message' => 'Transportadora criado com sucesso', $trans], 201);
             } catch (ValidationException $e) {
                 return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
             } catch (\Exception $e) {
@@ -74,7 +74,7 @@ class TransportadoraController extends Controller
                 }
                 
                 $trans->update($request->all());
-                return response()->json(['transportadora' => $trans], 200);
+                return response()->json($trans, 200);
             } catch (\Exception $e) {
                 return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
             }

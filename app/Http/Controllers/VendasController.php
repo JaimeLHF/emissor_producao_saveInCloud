@@ -82,7 +82,7 @@ class VendasController extends Controller
                 return response()->json(['message' => 'venda não encontrada'], 404);
             }
 
-            return response()->json(['vendas' => $venda], 200);
+            return response()->json($venda, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -114,13 +114,13 @@ class VendasController extends Controller
     {
         try {
 
-            $item = Vendas::with('cliente', 'itens.produto', 'fatura', 'transportadora')->find($id);
+            $venda = Vendas::with('cliente', 'itens.produto', 'fatura', 'transportadora')->find($id);
 
-            if (!$item) {
+            if (!$venda) {
                 return response()->json(['message' => 'Venda não econtrada!'], 404);
             }
 
-            return response()->json(['venda' => $item], 200);
+            return response()->json($venda, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

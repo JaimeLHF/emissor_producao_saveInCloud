@@ -6506,7 +6506,8 @@
             "keywords": [
                 "dotenv",
                 "env",
-                "environment"
+                "environment",
+                "getenv"
             ],
             "support": {
                 "issues": "https://github.com/vlucas/phpdotenv/issues",

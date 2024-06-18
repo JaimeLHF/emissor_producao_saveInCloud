@@ -12,8 +12,7 @@ class ProdutoController extends Controller
     public function getAllProducts()
     {
         try {
-            header('Acess-Control-Allow-Origin: http://localhost:5173');
-            header('Acess-Control-Allow-Methods: PUT, PATCH, POST, DELETE');
+            
             $produtos = Produtos::with('acabamento')->get();
 
             if (!$produtos) {
@@ -36,7 +35,7 @@ class ProdutoController extends Controller
                 return response()->json(['message' => 'Produto não econtrado!'], 404);
             }
 
-            return response()->json(['produto' => $produto], 200);
+            return response()->json($produto, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -45,10 +44,7 @@ class ProdutoController extends Controller
     public function newProduto(Request $request)
     {
         try {
-
-            // $request->validate([$request->all()]);
-            header('Acess-Control-Allow-Origin: http://localhost:5173');
-            header('Acess-Control-Allow-Methods: PUT, PATCH, POST, DELETE');
+          
             $produtosCriados = [];
 
             foreach ($request->produtos as $produtoData) {
@@ -56,7 +52,7 @@ class ProdutoController extends Controller
                 $produtosCriados[] = $produto;
             }
 
-            return response()->json(['message' => 'Produtos criados com sucesso', 'produtos' => $produtosCriados], 201);
+            return response()->json(['message' => 'Produtos criados com sucesso', $produtosCriados], 201);
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Campos obrigatórios não preenchidos. Verifique!', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -74,7 +70,7 @@ class ProdutoController extends Controller
             }
 
             $produto->update($request->all());
-            return response()->json(['produto' => $produto], 200);
+            return response()->json($produto, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

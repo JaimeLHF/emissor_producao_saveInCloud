@@ -18,7 +18,7 @@ class FaturaController extends Controller
                 return response()->json(['message' => 'fatura não encontrada'], 404);
             }
 
-            return response()->json(['faturas' => $fatura], 200);
+            return response()->json($fatura, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -34,7 +34,7 @@ class FaturaController extends Controller
                 return response()->json(['message' => 'Fatura não econtrado!'], 404);
             }
 
-            return response()->json(['fatura' => $fatura], 200);
+            return response()->json($fatura, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

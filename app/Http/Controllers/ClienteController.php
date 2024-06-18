@@ -18,7 +18,7 @@ class ClienteController extends Controller
                 return response()->json(['message' => 'Clientes não encontrado'], 404);
             }
 
-            return response()->json(['clientes:' => $clientes], 200);
+            return response()->json($clientes, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -33,7 +33,7 @@ class ClienteController extends Controller
                 return response()->json(['message' => 'Cliente não econtrado!'], 404);
             }
 
-            return response()->json(['cliente' => $cliente], 200);
+            return response()->json($cliente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -48,14 +48,14 @@ class ClienteController extends Controller
             $existingCliente = Clientes::where('cpf_cnpj', $request->input('cpf_cnpj'))->first();
 
             if ($existingCliente) {
-                return response()->json(['message' => 'Cliente com o mesmo nome já existe'], 422);
+                return response()->json(['message' => 'Cliente já existe'], 422);
             }
 
             $request->validate(Clientes::rules());
 
             $cliente = Clientes::create($request->all());
 
-            return response()->json(['message' => 'Cliente criado com sucesso', 'cliente' => $cliente], 201);
+            return response()->json(['message' => 'Cliente criado com sucesso', $cliente], 201);
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -74,7 +74,7 @@ class ClienteController extends Controller
             }
             
             $cliente->update($request->all());
-            return response()->json(['cliente' => $cliente], 200);
+            return response()->json($cliente, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

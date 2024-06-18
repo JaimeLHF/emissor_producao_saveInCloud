@@ -81,6 +81,11 @@ class NFeService
         $stdIde->verProc = '0.00'; //
         $nfe->tagide($stdIde);
 
+        $stdRef = new \stdClass();
+        $stdIde->refNFe = '43240393092831000111550010000515351555271672'; //
+        $nfe->tagrefNFe($stdRef);
+
+
         ////////////////////////////////////////////////////////////////////
 
         //Identificação do emitente da NF-e
@@ -431,6 +436,12 @@ class NFeService
             $nfe->tagtransporta($stdTransportdora);
         }
 
+        $stdVol = new \stdClass();
+        $stdVol->qVol = 26;
+        $stdVol->pesoL = 520;
+        $stdVol->pesoB = 520;
+        $nfe->tagvol($stdVol);
+
         ////////////////////////////////////////////////////////////////////
 
         //FATURA
@@ -506,10 +517,10 @@ class NFeService
 
         //TAG RESPONSAVEL TECNICO
         $std = new \stdClass();
-        $std->CNPJ = getenv('RESP_CNPJ'); //CNPJ da pessoa jurídica responsável pelo sistema utilizado na emissão do documento fiscal eletrônico
-        $std->xContato = getenv('RESP_NOME'); //Nome da pessoa a ser contatada
-        $std->email = getenv('RESP_EMAIL'); //E-mail da pessoa jurídica a ser contatada
-        $std->fone = getenv('RESP_FONE');
+        $std->CNPJ = env('RESP_CNPJ'); //CNPJ da pessoa jurídica responsável pelo sistema utilizado na emissão do documento fiscal eletrônico
+        $std->xContato = env('RESP_NOME'); //Nome da pessoa a ser contatada
+        $std->email = env('RESP_EMAIL'); //E-mail da pessoa jurídica a ser contatada
+        $std->fone = env('RESP_FONE');
         $nfe->taginfRespTec($std);
 
         ////////////////////////////////////////////////////////////////////

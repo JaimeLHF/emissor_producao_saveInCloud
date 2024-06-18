@@ -18,7 +18,7 @@ class AcabamentoController extends Controller
                 return response()->json(['message' => 'Acabamentos não encontrado'], 404);
             }
 
-            return response()->json(['acabamentos:' => $acabamento], 200);
+            return response()->json($acabamento, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -33,7 +33,7 @@ class AcabamentoController extends Controller
                 return response()->json(['message' => 'Acabamento não econtrado!'], 404);
             }
 
-            return response()->json(['acabamento' => $acabamento], 200);
+            return response()->json($acabamento, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }
@@ -74,7 +74,7 @@ class AcabamentoController extends Controller
             }
 
             $acabamento->update($request->all());
-            return response()->json(['acabamento' => $acabamento], 200);
+            return response()->json($acabamento, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erro interno no servidor', 'error' => $e->getMessage()], 500);
         }

@@ -7,8 +7,8 @@ use App\Http\Controllers\FaturaController;
 use App\Http\Controllers\ItensVendaController;
 use App\Http\Controllers\NFeController;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\TransportadoraController;
 use App\Http\Controllers\VendasController;
-use App\Services\NFeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +71,12 @@ Route::group(['prefix' => 'venda'], function () {
     Route::post('/new', [VendasController::class, 'save']);
     Route::patch('/update/{id}', [VendasController::class, 'updateById']);
     Route::delete('/delete/{id}', [VendasController::class, 'deleteById']);
+});
+
+//Transportadoras
+Route::group(['prefix' => 'trans'], function () {
+    Route::get('/', [TransportadoraController::class, 'getAllTransportadoras']);
+    Route::post('/new', [TransportadoraController::class, 'newTrans']);
 });
 
 //XML - Transmitir NFe
